@@ -1,0 +1,1 @@
+import{a9 as t}from"./index-42c4f717.js";const o=()=>t.post("/V1/Mgm2/GetSetting"),e=()=>t.post("/V1/Mgm2/GetStatistics"),m=()=>t.post("/V1/Mgm2/GetCode"),i=s=>t.post("/V1/Mgm2/GetMgmList",s),a=s=>t.post("/V1/Mgm2/GetMgmBonusList",s);export{e as a,m as b,i as c,a as d,o as g};
