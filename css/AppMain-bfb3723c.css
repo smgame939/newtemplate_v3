@@ -4921,7 +4921,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     --animate-duration: 1s;
     --animate-delay: 1s;
     --animate-repeat: 1;
-    --initial-loader-color:var(--bdColor040);
+
 }
 
 .animate__animated {
@@ -18872,8 +18872,7 @@ iframe {
     background-repeat: no-repeat;
     width: 215px;
     height: 45px;
-    display: block;
-
+    display: block
 }
 
 .scrollFrame {
