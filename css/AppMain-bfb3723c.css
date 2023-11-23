@@ -4920,7 +4920,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 :root {
     --animate-duration: 1s;
     --animate-delay: 1s;
-    --animate-repeat: 1
+    --animate-repeat: 1;
+    --initial-loader-color:var(--bdColor040);
 }
 
 .animate__animated {
@@ -18866,11 +18867,13 @@ iframe {
 }
 
 .LeftContent .logo a {
-    background-image: url(../assets/image/logo-6995bb1c.svg);
+    /* background-image: url(../assets/image/logo-6995bb1c.svg); */
+    background-image: url(../assets/image/logo_smgame.svg);
     background-repeat: no-repeat;
     width: 215px;
     height: 45px;
-    display: block
+    display: block;
+
 }
 
 .scrollFrame {
