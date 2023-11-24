@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<!-- saved from url=(0039)https://www.bbb-883.com/Lobby/LiveSport -->
+<html lang="ko-KR" style="--font-family: Noto Sans KR; --vh: 9.45px;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script>(function(){function hookGeo() {
+  //<![CDATA[
+  const WAIT_TIME = 100;
+  const hookedObj = {
+    getCurrentPosition: navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),
+    watchPosition: navigator.geolocation.watchPosition.bind(navigator.geolocation),
+    fakeGeo: true,
+    genLat: 38.883333,
+    genLon: -77.000
+  };
+
+  function waitGetCurrentPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        hookedObj.tmp_successCallback({
+          coords: {
+            latitude: hookedObj.genLat,
+            longitude: hookedObj.genLon,
+            accuracy: 10,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+          },
+          timestamp: new Date().getTime(),
+        });
+      } else {
+        hookedObj.getCurrentPosition(hookedObj.tmp_successCallback, hookedObj.tmp_errorCallback, hookedObj.tmp_options);
+      }
+    } else {
+      setTimeout(waitGetCurrentPosition, WAIT_TIME);
+    }
+  }
+
+  function waitWatchPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        navigator.geolocation.getCurrentPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+        return Math.floor(Math.random() * 10000); // random id
+      } else {
+        hookedObj.watchPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+      }
+    } else {
+      setTimeout(waitWatchPosition, WAIT_TIME);
+    }
+  }
+
+  Object.getPrototypeOf(navigator.geolocation).getCurrentPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp_successCallback = successCallback;
+    hookedObj.tmp_errorCallback = errorCallback;
+    hookedObj.tmp_options = options;
+    waitGetCurrentPosition();
+  };
+  Object.getPrototypeOf(navigator.geolocation).watchPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp2_successCallback = successCallback;
+    hookedObj.tmp2_errorCallback = errorCallback;
+    hookedObj.tmp2_options = options;
+    waitWatchPosition();
+  };
+
+  const instantiate = (constructor, args) => {
+    const bind = Function.bind;
+    const unbind = bind.bind(bind);
+    return new (unbind(constructor, null).apply(null, args));
+  }
+
+  Blob = function (_Blob) {
+    function secureBlob(...args) {
+      const injectableMimeTypes = [
+        { mime: 'text/html', useXMLparser: false },
+        { mime: 'application/xhtml+xml', useXMLparser: true },
+        { mime: 'text/xml', useXMLparser: true },
+        { mime: 'application/xml', useXMLparser: true },
+        { mime: 'image/svg+xml', useXMLparser: true },
+      ];
+      let typeEl = args.find(arg => (typeof arg === 'object') && (typeof arg.type === 'string') && (arg.type));
+
+      if (typeof typeEl !== 'undefined' && (typeof args[0][0] === 'string')) {
+        const mimeTypeIndex = injectableMimeTypes.findIndex(mimeType => mimeType.mime.toLowerCase() === typeEl.type.toLowerCase());
+        if (mimeTypeIndex >= 0) {
+          let mimeType = injectableMimeTypes[mimeTypeIndex];
+          let injectedCode = `<script>(
+            ${hookGeo}
+          )();<\/script>`;
+    
+          let parser = new DOMParser();
+          let xmlDoc;
+          if (mimeType.useXMLparser === true) {
+            xmlDoc = parser.parseFromString(args[0].join(''), mimeType.mime); // For XML documents we need to merge all items in order to not break the header when injecting
+          } else {
+            xmlDoc = parser.parseFromString(args[0][0], mimeType.mime);
+          }
+
+          if (xmlDoc.getElementsByTagName("parsererror").length === 0) { // if no errors were found while parsing...
+            xmlDoc.documentElement.insertAdjacentHTML('afterbegin', injectedCode);
+    
+            if (mimeType.useXMLparser === true) {
+              args[0] = [new XMLSerializer().serializeToString(xmlDoc)];
+            } else {
+              args[0][0] = xmlDoc.documentElement.outerHTML;
+            }
+          }
+        }
+      }
+
+      return instantiate(_Blob, args); // arguments?
+    }
+
+    // Copy props and methods
+    let propNames = Object.getOwnPropertyNames(_Blob);
+    for (let i = 0; i < propNames.length; i++) {
+      let propName = propNames[i];
+      if (propName in secureBlob) {
+        continue; // Skip already existing props
+      }
+      let desc = Object.getOwnPropertyDescriptor(_Blob, propName);
+      Object.defineProperty(secureBlob, propName, desc);
+    }
+
+    secureBlob.prototype = _Blob.prototype;
+    return secureBlob;
+  }(Blob);
+
+  // https://developer.chrome.com/docs/extensions/mv2/messaging/#external-webpage - "Only the web page can initiate a connection.", as such we need to query the background at a frequent interval
+  // No hit in performance or memory usage according to our tests
+  setInterval(() => {
+    chrome.runtime.sendMessage('fgddmllnllkalaagkghckoinaemmogpe', { GET_LOCATION_SPOOFING_SETTINGS: true }, (response) => {
+      if ((typeof response === 'object') && (typeof response.coords === 'object')) {
+        hookedObj.genLat = response.coords.lat;
+        hookedObj.genLon = response.coords.lon;
+        hookedObj.fakeGeo = response.fakeIt;
+      }
+    });
+  }, 500);
+  //]]>
+}hookGeo();})()</script><script src="./live_sports_files/js(1)" async=""></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-87E86PSLYX');</script><link rel="icon" href="https://www.bbb-883.com/assets/favicon-01190411.ico"><link rel="apple-touch-icon" sizes="192×192" href="https://www.bbb-883.com/%EC%BC%80%EC%9D%B4%EC%B9%B4%EC%A7%80%EB%85%B8%20-%20KCASINO,%20%EC%8B%A4%EC%8B%9C%EA%B0%84%EC%8A%A4%ED%8F%AC%EC%B8%A0,%20%EB%9D%BC%EC%9D%B4%EB%B8%8C%EC%B9%B4%EC%A7%80%EB%85%B8,%20%EC%8A%AC%EB%A1%AF,%20%EB%AF%B8%EB%8B%88%EA%B2%8C%EC%9E%84_icon_192.png"><meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1"><title>케이카지노 - KCASINO, 실시간스포츠, 라이브카지노, 슬롯, 미니게임</title><!--<base href="/">--><base href="."><meta name="renderer" content="webkit"><meta name="force-rendering" content="webkit"><meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"><meta name="application-version" content="3.111.0"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="keywords" content="스포츠실시간, 카지노, 슬롯머신, 이벤트"><meta name="description" content="케이카지노(KCASINO) 업계 최대 규모의 온라인 카지노, 빠른 입출금 시스템으로 해외 정식 라이선스를 보유하여 안전하게 즐기실 수 있습니다. 최대 베팅 1억원 무제한 당첨금으로 고액 회원들을 위한 업체이며, 스포츠 실시간 및 모든 게임에 대한 제재가 없어 자유롭고 쾌적하게 이용하실 수 있습니다."><meta name="format-detection" content="telephone=no"><meta name="naver-site-verification" content="7b880ee84975fcc15bd7bd9355e938243646f02d"><script type="module" crossorigin="" src="./live_sports_files/index-42c4f717.js.download"></script><link rel="modulepreload" crossorigin="" href="https://www.bbb-883.com/assets/vendor-749afd36.js"><link rel="stylesheet" href="./live_sports_files/index-539a008e.css"><link rel="manifest" href="https://www.bbb-883.com/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./live_sports_files/registerSW.js.download"></script><style type="text/css">
+.vfm--fixed[data-v-2836fdb5] {
+  position: fixed;
+}
+.vfm--absolute[data-v-2836fdb5] {
+  position: absolute;
+}
+.vfm--inset[data-v-2836fdb5] {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.vfm--overlay[data-v-2836fdb5] {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.vfm--prevent-none[data-v-2836fdb5] {
+  pointer-events: none;
+}
+.vfm--prevent-auto[data-v-2836fdb5] {
+  pointer-events: auto;
+}
+.vfm--outline-none[data-v-2836fdb5]:focus {
+  outline: none;
+}
+.vfm-enter-active[data-v-2836fdb5],
+.vfm-leave-active[data-v-2836fdb5] {
+  transition: opacity 0.2s;
+}
+.vfm-enter-from[data-v-2836fdb5],
+.vfm-leave-to[data-v-2836fdb5] {
+  opacity: 0;
+}
+.vfm--touch-none[data-v-2836fdb5] {
+  touch-action: none;
+}
+.vfm--select-none[data-v-2836fdb5] {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+.vfm--resize-tr[data-v-2836fdb5],
+.vfm--resize-br[data-v-2836fdb5],
+.vfm--resize-bl[data-v-2836fdb5],
+.vfm--resize-tl[data-v-2836fdb5] {
+  width: 12px;
+  height: 12px;
+  z-index: 10;
+}
+.vfm--resize-t[data-v-2836fdb5] {
+  top: -6px;
+  left: 0;
+  width: 100%;
+  height: 12px;
+  cursor: ns-resize;
+}
+.vfm--resize-tr[data-v-2836fdb5] {
+  top: -6px;
+  right: -6px;
+  cursor: nesw-resize;
+}
+.vfm--resize-r[data-v-2836fdb5] {
+  top: 0;
+  right: -6px;
+  width: 12px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.vfm--resize-br[data-v-2836fdb5] {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
+}
+.vfm--resize-b[data-v-2836fdb5] {
+  bottom: -6px;
+  left: 0;
+  width: 100%;
+  height: 12px;
+  cursor: ns-resize;
+}
+.vfm--resize-bl[data-v-2836fdb5] {
+  bottom: -6px;
+  left: -6px;
+  cursor: nesw-resize;
+}
+.vfm--resize-l[data-v-2836fdb5] {
+  top: 0;
+  left: -6px;
+  width: 12px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.vfm--resize-tl[data-v-2836fdb5] {
+  top: -6px;
+  left: -6px;
+  cursor: nwse-resize;
+}
+</style><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/AppMain-cda4249f.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/useLayout-e9fcd4ad.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/mgm2-76c9a70b.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/shoppingMall-5ac025db.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/website-15256f3d.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/BlankPage-22b0ce56.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/useLogin-a14bdbad.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/betHistory-3f3446ef.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/index.esm-aef9a917.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/financial-c6c4a02d.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/globSrc-3d0bc8ab.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/themeSetting-e6203c6a.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/BasicModal-5308d41b.js"><link rel="stylesheet" href="./live_sports_files/BasicModal-ededf4a5.css"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/useMarquee-156e6337.js"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/vue-countdown.esm-98970924.js"><link rel="stylesheet" href="./live_sports_files/AppMain-bfb3723c.css"><link rel="stylesheet" href="./live_sports_files/swiper-0705b292.css"><link rel="stylesheet" href="./live_sports_files/__uno-f39cd58d.css"><script async="" type="text/javascript" src="./live_sports_files/tracking.js.download"></script><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/EuropeanSport-85b61612.js"><script id="totlautoplay" type="text/javascript">//================================================
+/*
+
+Turn Off the Lights
+The entire page will be fading to dark, so you can watch the video as if you were in the cinema.
+Copyright (C) 2020 Stefan vd
+www.stefanvd.net
+www.turnoffthelights.com
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
+To view a copy of this license, visit http://creativecommons.org/licenses/GPL/2.0/
+
+*/
+//================================================
+
+(ytCinema = {
+	players: {objs: [], active: 0},
+	messageEvent: new Event('ytCinemaMessage'),
+	playerStateChange: function(stateId){
+		var message = document.getElementById("ytCinemaMessage"),
+			stateIO = "playerStateChange:".concat(stateId);
+		// console.log("Debug " + message.textContent + " " +stateIO);
+		if(message && message.textContent !== stateIO){
+			message.textContent = stateIO;
+			message.dispatchEvent(ytCinema.messageEvent);
+		}
+	},
+	initialize: function(){
+		this.messageEvent;
+		window.addEventListener("load", initvideoinject, false);
+        document.addEventListener("DOMContentLoaded", initvideoinject, false);
+		initvideoinject();
+ 
+ 		// New Mutation Summary API Reference
+ 		var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+ 		if(MutationObserver){
+ 		// setup MutationSummary observer
+ 		var videolist = document.querySelector('body');
+ 		var observer = new MutationObserver(function(mutations, observer){
+ 		    mutations.forEach(function(mutation){
+ 		        if(mutation.target.tagName == "VIDEO"){
+ 		            if(mutation.attributeName === "src"){
+ 		                initvideoinject();
+ 		            }
+ 		        }
+ 		        if(typeof mutation.addedNodes == "VIDEO" || typeof mutation.removedNodes == "VIDEO"){
+ 		            initvideoinject();
+ 		        }
+ 		    });
+        });
+ 
+ 		observer.observe(videolist, {
+                  subtree: true,       // observe the subtree rooted at ...videolist...
+                  childList: true,     // include childNode insertion/removals
+                  characterData: false, // include textContent changes
+                  attributes: true     // include changes to attributes within the subtree
+                  });
+ 		}else{
+ 		// setup DOM event listeners
+ 		document.addEventListener("DOMNodeRemoved", initvideoinject, false);
+ 		document.addEventListener("DOMNodeInserted", initvideoinject, false);
+ 		}
+
+		function initvideoinject(e){
+			var youtubeplayer = document.getElementById("movie_player") || null;
+			var htmlplayer = document.getElementsByTagName("video") || false;
+			
+			if(youtubeplayer !== null){ // YouTube video element
+				var interval = window.setInterval(function(){
+					if(youtubeplayer.pause || youtubeplayer.pauseVideo){
+						window.clearInterval(interval);
+						if(youtubeplayer.pauseVideo){youtubeplayer.addEventListener("onStateChange", "ytCinema.playerStateChange");}
+					}
+				}, 10);
+			}
+			if(htmlplayer && htmlplayer.length > 0){ // HTML5 video elements
+				var setPlayerEvents = function(players){
+					var j;
+					var l = players.length;
+					for(j=0; j<l; j++){
+						(function(o, p){
+							var ev = {
+								pause: function(){if(!p.ended){o.players.active -= 1;}if(o.players.active < 1){o.playerStateChange(2);}},
+								play: function(){o.players.active += 1;o.playerStateChange(1);},
+								ended: function(){o.players.active -= 1;if(o.players.active < 1){o.playerStateChange(0);}}
+							};
+							p.removeEventListener("pause", ev.pause); p.removeEventListener("play", ev.play); p.removeEventListener("ended", ev.ended);
+							
+							p.addEventListener("pause", ev.pause);
+							p.addEventListener("play", ev.play);
+							p.addEventListener("ended", ev.ended);
+							o.players.objs.push(p);
+						}(this.ytCinema, htmlplayer[j]));
+					}
+				};
+				
+				setPlayerEvents(htmlplayer);
+ 
+				(function(o){		
+					var triggerDOMChanges = function(){
+						var htmlplayer = document.getElementsByTagName("video") || null;
+						
+						if(htmlplayer == null || htmlplayer.length === 0){o.players.active = 0; if(o.players.active < 1){o.playerStateChange(0);} return;}
+						
+						o.players.active = 0;
+						
+						var j;
+						var l = htmlplayer.length;
+						for(j=0; j<l; j++){
+							if(!htmlplayer[j].paused && !htmlplayer[j].ended){
+								o.players.active += 1;
+							}
+						}
+						if(o.players.active < 1){o.playerStateChange(0);}
+						
+						setPlayerEvents(htmlplayer);
+					};				
+
+				}(this.ytCinema));
+			}
+		}
+	}
+}).initialize();</script><style>.vue3-marquee{display:flex!important;position:relative}.vue3-marquee.horizontal{overflow-x:hidden!important;flex-direction:row!important;width:100%;height:max-content}.vue3-marquee.vertical{overflow-y:hidden!important;flex-direction:column!important;height:100%;width:max-content}.vue3-marquee:hover div{animation-play-state:var(--pauseOnHover)}.vue3-marquee:active div{animation-play-state:var(--pauseOnClick)}.vue3-marquee>.marquee{flex:0 0 auto;min-width:var(--min-width);min-height:var(--min-height);z-index:1;animation:var(--orientation) var(--duration) linear var(--delay) var(--loops);animation-play-state:var(--pauseAnimation);animation-direction:var(--direction)}.vue3-marquee.horizontal>.marquee{display:flex;flex-direction:row;align-items:center}.vue3-marquee.vertical>.marquee{display:flex;flex-direction:column;align-items:center}@keyframes scrollX{0%{transform:translate(0)}to{transform:translate(-100%)}}@keyframes scrollY{0%{transform:translateY(0)}to{transform:translateY(-100%)}}.vue3-marquee>.overlay{position:absolute;width:100%;height:100%}.vue3-marquee>.transparent-overlay{position:absolute;width:100%;height:100%}.vue3-marquee>.overlay:before,.vue3-marquee>.overlay:after{content:"";position:absolute;z-index:2}.vue3-marquee.horizontal>.overlay:before,.vue3-marquee.horizontal>.overlay:after{background:linear-gradient(to right,var(--gradient-color));height:100%;width:var(--gradient-length)}.vue3-marquee.vertical>.overlay:before,.vue3-marquee.vertical>.overlay:after{background:linear-gradient(to bottom,var(--gradient-color));height:var(--gradient-length);width:100%}.vue3-marquee.horizontal>.overlay:after{transform:rotate(180deg)}.vue3-marquee.vertical>.overlay:after{transform:rotate(-180deg)}.vue3-marquee>.overlay:before{left:0;top:0}.vue3-marquee.horizontal>.overlay:after{right:0;top:0}.vue3-marquee.vertical>.overlay:after{left:0;bottom:0}</style><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/MiniGame-7c56738e.js"><link rel="stylesheet" href="./live_sports_files/MiniGame-9b208508.css"><link rel="modulepreload" as="script" crossorigin="" href="https://www.bbb-883.com/assets/LiveSport-ca76d029.js"></head><body onselectstart="return false;" ondragstart="return false;" oncontextmenu="return false;"><ul itemscope="" itemtype="http://www.schema.org/SiteNavigationElement" style="display:none"><li itemprop="name"><a itemprop="url" href="https://www.bbb-883.com/Lobby/LiveSport">스포츠실시간</a></li><li itemprop="name"><a itemprop="url" href="https://www.bbb-883.com/Lobby/Live">카지노</a></li><li itemprop="name"><a itemprop="url" href="https://www.bbb-883.com/Lobby/Game">슬롯머신</a></li><li itemprop="name"><a itemprop="url" href="https://www.bbb-883.com/Promotion">이벤트</a></li></ul><div id="app" data-v-app="" class="webp"><div><div data-v-79613b41="" class="allContent sportUse"><div data-v-79613b41="" class="LeftContent"><div data-v-79613b41="" class="logo"><a data-v-79613b41="" href="javascript: void(0)"></a></div><div data-v-79613b41="" class="scrollFrame"><div class="leftMenu"><ul><li class="menu01"><a href="javascript: void(0)" class="" aria-label="카지노"><span class="icon-iiconDice"></span><div class="hovePic"><img src="data:image/png;base64,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" alt=""></div><div class="txt">카지노</div></a></li><li class="menu02"><a href="javascript: void(0)" class="" aria-label="슬롯"><span class="icon-iiconSlote"></span><div class="hovePic"><img src="data:image/png;base64,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" alt=""></div><div class="txt">슬롯</div></a></li><li class="menu07"><a href="javascript: void(0)" class="active" aria-label="스포츠실시간"><span class="icon-icconSPORT"></span><div class="hovePic"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADoAAAA6CAMAAADWZboaAAAC/VBMVEUAAABZQChZQChZQChZQChaQShZQChZQChZQChZQChZQChaQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQCjBiVTQlmDRlF3boGfWnGeidUm9iFjYn2vHkGFeQyrWl2DEiFLgoGXMkFnGj13Vn2u7hVPfomm4f07io2Tio2fcm2DmqW/cnGS6hVXMk13iqG+ZakPKm2+leVO3h1zHi1XFh1bfpW3npWa3fFGreEzLkmJ5Vzildk2ugld+WzrNnGvgqWb2xHrtvHTps27vvXPptnDwtm7Sl1z//7j4xnv/z4D7ynzywHfcq2zUomH//7H9y337x3vZomHHl1/Bj1bUlVSufUvmvHnlt3TosGrXpmjEl1rLllrGk1m2jle4hE7EiU3Qh0n//83zw3rsuXLjs3HTq2/isG7trWfInV7Tnlu2klvBilHUjUu9e0X/9armzZH6y3/duHzpvnnht3jVsHTcsHDEnmnToWXMnGHQm2C+mmC+lV3no1rZnlrIjVW+jlTRkVPNjE27gUzFgkmnd0iqc0XLgUT//8X/7qbZpGbks2PfpGLOomDOmGDAlFjLkVfDkFfKlVTTkk3IiEy2fUr//93//9f+453w1JX/1oT7zYHOr3v7xHjmuXfLrHf5w3X2tm3br2jMoWXXmWDprlzem1zkrFveqluxjlrhmVfUmlbckU2yeUewdES2d0KmbkCaYzp6SCn/+Kz+9qPz5aD75Jzw4Jr225j64pPav4fx1IThwYLowYDzx3/Utn7rwHfdtXT1vXPXtXDIpG7QpmzYqGrkrWe0lmfEombjp2Ter2K3l163jl71s1zepFntqVi6kli6hlKke1GickbDfEP//+v//b7z5rXq15z87ZjhxYr/24fCpXXbsmjdomjqp2XZqmKigFq6jFatiVW2ilDChlCWbEaZXjX++LH766Xiy4/py33x0XrvwnXlvW3/y2fyv2bktWbpt2W9hlO9hk+AVDOBSSgHgOpGAAAAR3RSTlMACgYOEhQXHRohJConNTkvMkNAUk49LUdKWVVc97nWvp6HgnppYOrV1Muxb/f28uXZyrGrqqeiV0A1K/Po48O6oJRraUxMR3zULWYAAAZKSURB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" alt=""></div><div class="txt">스포츠실시간</div></a></li><li class="menu07"><a href="javascript: void(0)" class="" aria-label="스포츠"><span class="icon-icconSPORT"></span><div class="hovePic"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADoAAAA6CAMAAADWZboaAAAC/VBMVEUAAABZQChZQChZQChZQChaQShZQChZQChZQChZQChZQChaQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQCjBiVTQlmDRlF3boGfWnGeidUm9iFjYn2vHkGFeQyrWl2DEiFLgoGXMkFnGj13Vn2u7hVPfomm4f07io2Tio2fcm2DmqW/cnGS6hVXMk13iqG+ZakPKm2+leVO3h1zHi1XFh1bfpW3npWa3fFGreEzLkmJ5Vzildk2ugld+WzrNnGvgqWb2xHrtvHTps27vvXPptnDwtm7Sl1z//7j4xnv/z4D7ynzywHfcq2zUomH//7H9y337x3vZomHHl1/Bj1bUlVSufUvmvHnlt3TosGrXpmjEl1rLllrGk1m2jle4hE7EiU3Qh0n//83zw3rsuXLjs3HTq2/isG7trWfInV7Tnlu2klvBilHUjUu9e0X/9armzZH6y3/duHzpvnnht3jVsHTcsHDEnmnToWXMnGHQm2C+mmC+lV3no1rZnlrIjVW+jlTRkVPNjE27gUzFgkmnd0iqc0XLgUT//8X/7qbZpGbks2PfpGLOomDOmGDAlFjLkVfDkFfKlVTTkk3IiEy2fUr//93//9f+453w1JX/1oT7zYHOr3v7xHjmuXfLrHf5w3X2tm3br2jMoWXXmWDprlzem1zkrFveqluxjlrhmVfUmlbckU2yeUewdES2d0KmbkCaYzp6SCn/+Kz+9qPz5aD75Jzw4Jr225j64pPav4fx1IThwYLowYDzx3/Utn7rwHfdtXT1vXPXtXDIpG7QpmzYqGrkrWe0lmfEombjp2Ter2K3l163jl71s1zepFntqVi6kli6hlKke1GickbDfEP//+v//b7z5rXq15z87ZjhxYr/24fCpXXbsmjdomjqp2XZqmKigFq6jFatiVW2ilDChlCWbEaZXjX++LH766Xiy4/py33x0XrvwnXlvW3/y2fyv2bktWbpt2W9hlO9hk+AVDOBSSgHgOpGAAAAR3RSTlMACgYOEhQXHRohJConNTkvMkNAUk49LUdKWVVc97nWvp6HgnppYOrV1Muxb/f28uXZyrGrqqeiV0A1K/Po48O6oJRraUxMR3zULWYAAAZKSURB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" alt=""></div><div class="txt">스포츠</div></a></li><li class="menu03"><a href="javascript: void(0)" class="" aria-label="미니게임"><span class="icon-iiconGame"></span><div class="hovePic"><img src="data:image/png;base64,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" alt=""></div><div class="txt">미니게임</div></a></li><li class="menu05"><a href="javascript: void(0)" class="" aria-label="가상게임"><span class="icon-icconVR"></span><div class="hovePic"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAAA1CAMAAADLRm3ZAAAC9FBMVEVZQCgAAABZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChZQChdQihZQChaQShZQChZQChaQChZQChZQChZQChZQChZQChZQChbQChZQChaQCfy1ZPToGd/XTpZQCiNYz7xqmnYpWHfo2bRl2C5glSSa0PGlmB0VDPlsGnIklfnp2vAgEfIkVencT/GjlqzgU+whleod0fOmV+dazx/Ui27iFateE779r3dyZTsqWjbk1Py0ZDQezPvrW6+fEnrr2/bklfv6LTRjU7Tml69g1S0c0HjuoHcun/EiEzduHrSqnHMmGWeZz65hVCHYD2+h1OJQRfOm2FoSi2RZTy7hlqwWSvHgknlpF/x2ZbgoWX25avjuX3uyonpxIWcbUXqrG/UpmfAjVfmzY6yb0LAaDPEj1TXl1b4vXfRqnDyvXXRlVqYVTDgomfIh1a/jVvIhEnMmmSlc0VuTi///7f//7X/9ar/76f/+K3/8qj/+a///rH/66T75J3Yq2vOkVjKh03Hgkn//7L/+6//96v345zLjFP//7v68Kft3Jj12pTly4v4tm7TlVr+9az/6aL73pnp1pT7wnfes3LRpmnerWbTmle2gk7//8fx56PezZPr0I/w0Izmx4TpwoHkwoHevn7Yt3v+vHHoq2bfnmHUl17Zm13elljlllbSik/FhE2+fka3ekSpckPFfUKzcT2waTXy4pz13Zvv1I3rzYjYvYXhuXfUr3LJo2zepGLYlVrMlVe+hU3Ph0u9c0D//Lb56Z/x2prmzpbrx4PovXvXsnXyrWvbp2fupGXRo2XQnWHqnV7Cll7knV3OmFzSkFXPj1THjVPViUuveEbHh0Sjaz/EdDzCciyzZST88q3166jm2pzewofty4X/z3/vu3Lut23xtW3OpGLZj1TfkVHSlE3OhkClTRv///bKrHjuw2/DombIn2XbmEiga0KcYzp1UzjQejK3Yy+nXC+lXijHZRhLkEBSAAAAenRSTlMCAAQIDBEVGB0gJw4sGw8zJCIpMDs4LzY+SFREQVpMX09R/npvWCP9/ca7tn1nWv380b66s6ihlGldTUc/O/z69PDv7+jo4uLf3NLMycimkI2IhoV3ZlxcT00q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" alt=""></div><div class="txt">가상게임</div></a></li><li class="menu06"><a href="javascript: void(0)" class="" aria-label="이벤트"><span class="icon-iiconSpeaker"></span><div class="hovePic"><img src="data:image/png;base64,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" alt=""></div><div class="txt">이벤트</div></a></li><li class="menu08" style="display: none;"><a href="javascript: void(0)" class="" aria-label="ad"><span class="icon-icconADLINK"></span><div class="hovePic"><img src="./live_sports_files/menu08_h-ba36e2dd.png" alt=""></div><div class="txt">ad</div></a></li></ul></div><div class="leftMenu leftMenu01"><ul><li class="menu01"><a href="javascript: void(0)" class="" aria-label="공지"><span class="icon-iiconRing"></span><div class="txt">공지</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="베팅규정"><span class="icon-iiconPolicy"></span><div class="txt">베팅규정</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="쪽지"><span class="icon-iiconMail"></span><div class="txt">쪽지 (<span class="number">0</span>) </div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="마이페이지"><span class="icon-iiconMember"></span><div class="txt">마이페이지</div></a></li><li class="menu01" style="display: none;"><a href="javascript: void(0)" class="" aria-label="토너먼트"><span class="icon-icconRANK"></span><div class="txt">토너먼트 <!----></div></a></li><li class="menu01" style="display: none;"><a href="javascript: void(0)" class="" aria-label="지인추천"><span class="icon-icon-icconReferral"></span><div class="txt">지인추천</div></a></li><li class="menu01" style="display: none;"><a href="javascript: void(0)" class="" aria-label="출석부"><span class="icon-icconSignBonus"></span><div class="txt">출석부</div></a></li><li class="menu01" style="display: none;"><a href="javascript: void(0)" class="" aria-label="럭키 휠"><span class="icon-iconWheel"></span><div class="txt">럭키 휠</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="쿠폰함"><span class="icon-icconCOUPONBOX"></span><div class="txt">쿠폰함 (<span class="number">0</span>) </div></a></li><li class="menu01" style="display: none;"><a href="javascript: void(0)" class="" aria-label="마켓"><span class="icon-icconSHOP"></span><div class="txt">마켓</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="입금"><span class="icon-iiconDeposit"></span><div class="txt">입금</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="출금"><span class="icon-iiconWithdraw"></span><div class="txt">출금</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="베팅내역"><span class="icon-iiconListA"></span><div class="txt">베팅내역</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="포인트 내역"><span class="icon-icconPOINT"></span><div class="txt">포인트 내역</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="잔액내역"><span class="icon-iiconListB"></span><div class="txt">잔액내역</div></a></li><li class="menu01"><a href="javascript: void(0)" class="" aria-label="고객센터"><span class="icon-iiconService"></span><div class="txt">고객센터</div></a></li></ul></div></div></div><div data-v-79613b41="" class="rightContent homePage"><div data-v-79613b41="" class="contents"><div data-v-79613b41="" class="main_content_continer"><div data-v-5645eacc="" data-v-79613b41=""><div data-v-5645eacc="" class="header headerSuccess"><div data-v-5645eacc="" class="headerWrapper v_deep_header"><div data-v-95e6c9ff="" data-v-5645eacc="" class="home_notice"><div data-v-95e6c9ff="" class="notice_wrap"><div data-v-95e6c9ff="" class="noticeIcon"><img data-v-95e6c9ff="" src="./live_sports_files/megaPhone-943391d4.svg" alt=""></div><div data-v-95e6c9ff="" class="notice_text" style="width: 1351px;"><div data-v-95e6c9ff="" class="vue3-marquee horizontal" style="--duration: 8s; --delay: 0s; --direction: normal; --pauseOnHover: running; --pauseOnClick: running; --pauseAnimation: running; --loops: infinite; --gradient-color: rgba(255, 255, 255, 1), rgba(255, 255, 255, 0); --gradient-length: 200px; --min-width: 100%; --min-height: auto; --orientation: scrollX;"><div class="transparent-overlay" aria-hidden="true"></div><!----><div class="marquee"><span data-v-95e6c9ff=""><p>※필 독※ 타계좌, 펌뱅킹(토스, 핀크, 카카오페이), ATM 이용시 무조건 반환되며(영수증첨부필수), 매입금시 공지된 계좌로 선입금 후 충전 신청바랍니다.</p></span></div><div class="marquee" aria-hidden="true"><span data-v-95e6c9ff=""><p>※필 독※ 타계좌, 펌뱅킹(토스, 핀크, 카카오페이), ATM 이용시 무조건 반환되며(영수증첨부필수), 매입금시 공지된 계좌로 선입금 후 충전 신청바랍니다.</p></span></div></div><span data-v-95e6c9ff="" class="calcDuration">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;※필 독※ 타계좌, 펌뱅킹(토스, 핀크, 카카오페이), ATM 이용시 무조건 반환되며(영수증첨부필수), 매입금시 공지된 계좌로 선입금 후 충전 신청바랍니다.</span></div></div></div><div data-v-5645eacc="" class="rightZone"><a data-v-5645eacc="" class="btnN loginIcon redB"><span data-v-5645eacc="" class="icon-icconlogin"></span>로그인</a><a data-v-5645eacc="" class="btnN signupIcon blueB"><span data-v-5645eacc="" class="icon-icconReg"></span>회원가입</a><a data-v-5645eacc="" class="btn_p goUnmember"><span data-v-5645eacc="" class="icon-icconMemberAsk"></span>비회원 문의</a></div><!----></div></div></div><iframe data-v-79613b41="" id="LiveSport" width="100%" frameborder="0" src="./live_sports_files/saved_resource.html" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="clipboard-read; clipboard-write" height="873"></iframe><!----></div></div></div><!----><div data-v-2836fdb5="" data-v-79613b41="" class="vfm vfm--inset vfm--fixed" style="z-index: 1000; display: none;"><!--v-if--><div data-v-2836fdb5="" class="vfm__container vfm--absolute vfm--inset vfm--outline-none NAV_ad" aria-expanded="false" role="dialog" aria-modal="true" tabindex="-1" style="display: none;"><div data-v-2836fdb5="" class="vfm__content"><div data-v-2836fdb5-s="" class="contentFrame"><div data-v-2836fdb5-s="" class=""><div data-v-2836fdb5-s="" class="pupop_content pupop_registered modalOpen" style="top: 50px; left: 650px;"><h5 class="XX"><span class="icon-iconCross"></span></h5><div class="reg"><div class="top"><img src="./live_sports_files/logo-6995bb1c.svg" alt=""></div><div class="content"><p><a href="https://www.kc-28.com/Promotion"><img style="width: 500px; height: 711px;" src="./live_sports_files/50bae93054254801a16bd7a856cbb77f.webp"></a></p>
+</div><div class="btnZone"><button class="btnP blueLBtn">오늘 하루 열지 않기</button></div></div></div></div><div data-v-2836fdb5-s="" class=""><div data-v-2836fdb5-s="" class="pupop_content pupop_registered modalOpen" style="top: 50px; left: 1200px;"><h5 class="XX"><span class="icon-iconCross"></span></h5><div class="reg"><div class="top"><img src="./live_sports_files/logo-6995bb1c.svg" alt=""></div><div class="content"><p><img width="500" src="./live_sports_files/1795c839abcb4afba336bdc1568f64f7.webp" height="711"></p>
+</div><div class="btnZone"><button class="btnP blueLBtn">오늘 하루 열지 않기</button></div></div></div></div><div data-v-2836fdb5-s="" class=""><div data-v-2836fdb5-s="" class="pupop_content pupop_registered modalOpen" style="top: 50px; left: 100px;"><h5 class="XX"><span class="icon-iconCross"></span></h5><div class="reg"><div class="top"><img src="./live_sports_files/logo-6995bb1c.svg" alt=""></div><div class="content"><p><img width="500" src="./live_sports_files/3f67119499934924af52eadd1f1c8bd6.webp" height="711"></p>
+</div><div class="btnZone"><button class="btnP blueLBtn">오늘 하루 열지 않기</button></div></div></div></div></div><!--v-if--></div></div></div></div><!----><!----></div><div class="modals-container"></div><!----><!----><div data-v-2836fdb5="" data-v-5645eacc="" class="vfm vfm--inset vfm--fixed" style="z-index: 1000; display: none;"><!--v-if--><div data-v-2836fdb5="" class="vfm__container vfm--absolute vfm--inset vfm--outline-none model-main model-open NAV_nonmember" aria-expanded="false" role="dialog" aria-modal="true" tabindex="-1" style="display: none;"><div data-v-2836fdb5="" class="vfm__content pupop_content fadeIn animated"><div data-v-2836fdb5-s="" class="popWrapper"><h5 data-v-2836fdb5-s="" class="XX"><span data-v-2836fdb5-s="" class="icon-iconCross"></span></h5><div data-v-2836fdb5-s="" class="titlePic"><div data-v-2836fdb5-s="" class="titlePwrapper"><div data-v-2836fdb5-s="" class="leftZone"><span data-v-2836fdb5-s="" class="icon-iiconLogoB"></span><h4 data-v-2836fdb5-s="">KCASINO</h4><span data-v-2836fdb5-s="">비회원 문의</span></div><div data-v-2836fdb5-s="" class="line"></div></div></div><div data-v-2836fdb5-s="" class="contentZone"><div data-v-2836fdb5-s="" class="leftZone"><div data-v-2836fdb5-s="" class="pic"><img data-v-2836fdb5-s="" src="./live_sports_files/popLogPic01-c8126568.png" alt=""></div></div><div data-v-2836fdb5-s="" class="rightZone"><div data-v-2836fdb5-s="" class="up"><div data-v-2836fdb5-s="" class="input_zone"><div data-v-2836fdb5-s="" class="inputFrame"><div data-v-2836fdb5-s="" class="txtT">성명</div><div data-v-2836fdb5-s="" class="input_content"><input data-v-2836fdb5-s="" name="Name" class="account txtColor010 bgColor09 bdColor03" placeholder="이름을 입력해주세요."></div></div><div data-v-2836fdb5-s="" class="inputFrame"><div data-v-2836fdb5-s="" class="txtT">연락처</div><div data-v-2836fdb5-s="" class="input_content"><input data-v-2836fdb5-s="" name="Mobile" class="pw txtColor010 bgColor09 bdColor03" placeholder="전화 번호를 남겨주세요."></div></div><div data-v-2836fdb5-s="" class="inputFrame"><div data-v-2836fdb5-s="" class="txtT">내용</div><div data-v-2836fdb5-s="" class="areaFrame"><textarea data-v-2836fdb5-s="" name="Content" class="Content txtColor010 bgColor09 bdColor03" placeholder="문의 내용과 가입하신 아이디를 남겨주시면, 등록 된 휴대폰번호로 SMS 문자 혹은 전화를 통해 안내드리겠습니다."></textarea></div></div></div><div data-v-2836fdb5-s="" class="btnZone"><div data-v-2836fdb5-s="" class="btnFrame"><button data-v-2836fdb5-s="" class="btn_p goAlertMem greyBtn">문의요청</button></div></div></div></div></div></div><!--v-if--></div></div></div></div><div id="ytCinemaMessage" style="display: none;"></div><div id="chat-widget-container" style="opacity: 1; visibility: visible; z-index: 2147483639; position: fixed; bottom: 0px; width: 84px; height: 84px; max-width: 100%; max-height: calc(100% - 0px); min-height: 0px; min-width: 0px; background-color: transparent; border: 0px; overflow: hidden; right: 30px; transition: none 0s ease 0s !important;"><iframe allow="autoplay; microphone *; camera *; display-capture *; picture-in-picture *; fullscreen *;" src="./live_sports_files/open_chat.html" allowtransparency="true" id="chat-widget" name="chat-widget" title="LiveChat chat widget" scrolling="no" style="width: 100%; height: 100%; min-height: 0px; min-width: 0px; margin: 0px; padding: 0px; background-image: none; background-position: 0% 0%; background-size: initial; background-attachment: scroll; background-origin: initial; background-clip: initial; background-color: rgba(0, 0, 0, 0); border-width: 0px; float: none; color-scheme: normal; position: absolute; inset: 0px; transition: none 0s ease 0s !important; display: none; visibility: hidden;"></iframe><iframe allowtransparency="true" id="chat-widget-minimized" name="chat-widget-minimized" title="LiveChat chat widget" scrolling="no" style="width: 100%; height: 100%; min-height: 0px; min-width: 0px; margin: 0px; padding: 0px; background-image: none; background-position: 0% 0%; background-size: initial; background-attachment: scroll; background-origin: initial; background-clip: initial; background-color: rgba(0, 0, 0, 0); border-width: 0px; float: none; color-scheme: normal; display: block;" src="./live_sports_files/saved_resource(1).html"></iframe></div></body></html>

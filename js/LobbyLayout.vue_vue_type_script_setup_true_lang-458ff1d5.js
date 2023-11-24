@@ -1,0 +1,1 @@
+import{i as t,r as s,P as n,o as a,y as r,t as c}from"./vendor-749afd36.js";const _={class:"main_content"},d=t({__name:"LobbyLayout",setup(l){const e=s(!1);return n(()=>{e.value=!0}),(o,u)=>(a(),r("div",_,[c(o.$slots,"default")]))}});export{d as _};
